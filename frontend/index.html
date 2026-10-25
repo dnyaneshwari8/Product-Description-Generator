@@ -1,0 +1,513 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>ShopAI — AI Product Description Generator</title>
+  <link rel="stylesheet" href="styles.css">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+</head>
+<body>
+
+  <!-- ============================================================ -->
+  <!-- PAGE 1: SIGN-IN VIEW                                         -->
+  <!-- ============================================================ -->
+  <main id="view-signin" class="page-view active" aria-labelledby="signin-title">
+    <div class="signin-card">
+      <div class="brand-header">
+        <div class="brand-logo" aria-hidden="true">
+          <svg width="36" height="36" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M6 2L3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4z"/>
+            <line x1="3" y1="6" x2="21" y2="6"/>
+            <path d="M16 10a4 4 0 0 1-8 0"/>
+          </svg>
+        </div>
+        <h1 id="signin-title">ShopAI</h1>
+        <p class="brand-tagline">AI Product Description Generator for Shopify Merchants</p>
+      </div>
+
+      <div class="demo-auth-badge" role="note">
+        <strong>Demo Credentials:</strong> Username: <code>admin</code> | Password: <code>admin@124</code>
+        <div class="demo-security-note">Local-demo authentication only. Not designed for production security.</div>
+      </div>
+
+      <div id="signin-error" class="alert-banner alert-error hidden" role="alert" aria-live="assertive"></div>
+
+      <form id="signin-form" novalidate>
+        <div class="form-group">
+          <label for="signin-username">Username</label>
+          <input
+            type="text"
+            id="signin-username"
+            name="username"
+            class="form-control"
+            placeholder="Enter admin"
+            required
+            autocomplete="username"
+          >
+        </div>
+
+        <div class="form-group">
+          <label for="signin-password">Password</label>
+          <input
+            type="password"
+            id="signin-password"
+            name="password"
+            class="form-control"
+            placeholder="Enter admin@124"
+            required
+            autocomplete="current-password"
+          >
+        </div>
+
+        <button type="submit" id="btn-submit-signin" class="btn btn-primary btn-block">
+          Sign In to ShopAI
+        </button>
+      </form>
+    </div>
+  </main>
+
+  <!-- ============================================================ -->
+  <!-- APPLICATION APP CONTAINER (PAGE 2 & 3)                      -->
+  <!-- ============================================================ -->
+  <div id="app-container" class="app-shell hidden">
+    <!-- Main Top Navigation -->
+    <header class="app-header">
+      <div class="header-content">
+        <div class="brand-compact" id="nav-brand-home" role="button" tabindex="0" title="Return to Catalogue">
+          <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M6 2L3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4z"/>
+            <line x1="3" y1="6" x2="21" y2="6"/>
+            <path d="M16 10a4 4 0 0 1-8 0"/>
+          </svg>
+          <span class="brand-text">ShopAI</span>
+        </div>
+
+        <div class="backend-status-pill" id="backend-status-indicator" title="Backend connection status">
+          <span class="status-dot dot-connecting"></span>
+          <span class="status-label">Checking AI Backend...</span>
+        </div>
+
+        <div class="user-session-bar">
+          <span class="user-chip">Merchant Admin</span>
+          <button type="button" id="btn-signout" class="btn btn-ghost btn-sm">
+            Sign Out
+          </button>
+        </div>
+      </div>
+    </header>
+
+    <!-- Global Notification Banner -->
+    <div id="global-toast" class="toast-container hidden" role="status" aria-live="polite"></div>
+
+    <!-- ============================================================ -->
+    <!-- PAGE 2: PRODUCT CATALOGUE VIEW                               -->
+    <!-- ============================================================ -->
+    <section id="view-catalogue" class="page-view" aria-labelledby="catalogue-title">
+      <div class="page-container">
+        <!-- Catalogue Header Bar -->
+        <div class="catalogue-header">
+          <div class="catalogue-titles">
+            <h1 id="catalogue-title">My Products</h1>
+            <p class="catalogue-subheading">Manage your catalog, generate AI descriptions, and push to Shopify.</p>
+          </div>
+          <div class="catalogue-actions">
+            <button type="button" id="btn-add-product" class="btn btn-primary">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <line x1="12" y1="5" x2="12" y2="19"></line>
+                <line x1="5" y1="12" x2="19" y2="12"></line>
+              </svg>
+              + Add Product
+            </button>
+          </div>
+        </div>
+
+        <!-- Catalogue Toolbar (Filter & Search) -->
+        <div class="catalogue-toolbar">
+          <div class="search-box">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <circle cx="11" cy="11" r="8"></circle>
+              <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
+            </svg>
+            <input
+              type="text"
+              id="catalogue-search-input"
+              class="form-control"
+              placeholder="Search by title, SKU, or category..."
+              aria-label="Search products"
+            >
+          </div>
+
+          <div class="filter-group">
+            <label for="catalogue-category-filter" class="sr-only">Filter by Category</label>
+            <select id="catalogue-category-filter" class="form-control select-control">
+              <option value="all">All Categories</option>
+              <option value="Clothing">Clothing</option>
+              <option value="Footwear">Footwear</option>
+              <option value="Bags">Bags</option>
+              <option value="Accessories">Accessories</option>
+              <option value="Home">Home</option>
+              <option value="Electronics">Electronics</option>
+              <option value="Beauty">Beauty</option>
+              <option value="Other">Other</option>
+            </select>
+            <button type="button" id="btn-reset-catalogue" class="btn btn-outline btn-sm" title="Restore original 10 sample products">
+              Reset Samples
+            </button>
+          </div>
+        </div>
+
+        <!-- Product Grid List -->
+        <div id="product-grid" class="product-grid" role="list" aria-label="Product catalogue list">
+          <!-- Populated dynamically by app.js -->
+        </div>
+
+        <!-- Empty State (Shown when catalogue is genuinely empty) -->
+        <div id="catalogue-empty-state" class="empty-state hidden">
+          <div class="empty-state-icon">📦</div>
+          <h2>No Products Found</h2>
+          <p>Your product catalogue is currently empty. Add your first item or restore the sample products.</p>
+          <div class="empty-state-buttons">
+            <button type="button" id="btn-empty-add" class="btn btn-primary">+ Add Product</button>
+            <button type="button" id="btn-empty-seed" class="btn btn-outline">Restore 10 Sample Products</button>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ============================================================ -->
+    <!-- PAGE 3: ADD / EDIT PRODUCT VIEW                              -->
+    <!-- ============================================================ -->
+    <section id="view-editor" class="page-view hidden" aria-labelledby="editor-heading">
+      <div class="page-container">
+        <!-- Editor Header Navigation -->
+        <div class="editor-header">
+          <div class="editor-nav-left">
+            <button type="button" id="btn-back-to-catalogue" class="btn btn-outline btn-sm">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <line x1="19" y1="12" x2="5" y2="12"></line>
+                <polyline points="12 19 5 12 12 5"></polyline>
+              </svg>
+              Back to Products
+            </button>
+            <div class="editor-title-group">
+              <h1 id="editor-heading">Add New Product</h1>
+              <span id="product-status-pill" class="badge badge-draft">Draft</span>
+            </div>
+          </div>
+
+          <div class="editor-nav-actions">
+            <button type="button" id="btn-save-draft" class="btn btn-outline">
+              Save Draft
+            </button>
+            <button type="button" id="btn-save-product" class="btn btn-primary">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"></path>
+                <polyline points="17 21 17 13 7 13 7 21"></polyline>
+                <polyline points="7 3 7 8 15 8"></polyline>
+              </svg>
+              Save Product
+            </button>
+          </div>
+        </div>
+
+        <!-- 2-Column Responsive Form Layout -->
+        <div class="editor-columns">
+          
+          <!-- LEFT COLUMN: Input, Image, Merchant Info & Controls -->
+          <div class="editor-column-left">
+            
+            <!-- SECTION A.1: Image Upload -->
+            <div class="card form-card">
+              <h2 class="section-title">Product Image</h2>
+              
+              <div id="image-dropzone" class="image-dropzone" tabindex="0" role="button" aria-label="Upload product image">
+                <input
+                  type="file"
+                  id="image-file-input"
+                  class="sr-only"
+                  accept="image/jpeg,image/jpg,image/png,image/webp"
+                >
+                <div id="dropzone-prompt" class="dropzone-prompt">
+                  <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8">
+                    <rect x="3" y="3" width="18" height="18" rx="2" ry="2"/>
+                    <circle cx="8.5" cy="8.5" r="1.5"/>
+                    <polyline points="21 15 16 10 5 21"/>
+                  </svg>
+                  <p class="dropzone-text"><strong>Click to upload</strong> or drag and drop</p>
+                  <span class="dropzone-meta">JPG, JPEG, PNG, or WEBP (max 10MB)</span>
+                </div>
+
+                <!-- Preview Area -->
+                <div id="dropzone-preview-container" class="dropzone-preview hidden">
+                  <img id="image-preview" src="" alt="Uploaded product preview" class="preview-img">
+                  <div class="preview-overlay-controls">
+                    <button type="button" id="btn-replace-image" class="btn btn-sm btn-white">Replace</button>
+                    <button type="button" id="btn-clear-image" class="btn btn-sm btn-danger">Remove</button>
+                  </div>
+                </div>
+              </div>
+
+              <p class="form-hint-note">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                  <circle cx="12" cy="12" r="10"></circle>
+                  <line x1="12" y1="16" x2="12" y2="12"></line>
+                  <line x1="12" y1="8" x2="12.01" y2="8"></line>
+                </svg>
+                A clear, well-lit image with the product visible gives better results.
+              </p>
+            </div>
+
+            <!-- SECTION A.2: Merchant Pre-generation Hints -->
+            <div class="card form-card">
+              <h2 class="section-title">Product Hints <span class="badge-optional">(Optional)</span></h2>
+              <p class="section-subtitle">Provide context to guide AI generation, or leave blank to auto-detect.</p>
+
+              <div class="form-group">
+                <label for="input-user-title">Product Title / Working Name</label>
+                <input
+                  type="text"
+                  id="input-user-title"
+                  class="form-control"
+                  placeholder="e.g. Classic Cotton Henley (optional)"
+                >
+              </div>
+
+              <div class="form-group">
+                <label for="input-user-brand">Brand / Company Name</label>
+                <input
+                  type="text"
+                  id="input-user-brand"
+                  class="form-control"
+                  placeholder="e.g. Fabrik Collective (optional)"
+                >
+              </div>
+
+              <div class="form-group">
+                <label for="select-user-category">Category Hint</label>
+                <select id="select-user-category" class="form-control select-control">
+                  <option value="">Auto-Detect from Image</option>
+                  <option value="Clothing">Clothing</option>
+                  <option value="Footwear">Footwear</option>
+                  <option value="Bags">Bags</option>
+                  <option value="Accessories">Accessories</option>
+                  <option value="Home">Home</option>
+                  <option value="Electronics">Electronics</option>
+                  <option value="Beauty">Beauty</option>
+                  <option value="Other">Other / Custom</option>
+                </select>
+              </div>
+
+              <div id="custom-category-group" class="form-group hidden">
+                <label for="input-custom-category">Custom Category Name</label>
+                <input
+                  type="text"
+                  id="input-custom-category"
+                  class="form-control"
+                  placeholder="e.g. Sporting Goods"
+                >
+              </div>
+
+              <!-- Generation Trigger -->
+              <div class="generate-section">
+                <button type="button" id="btn-generate-ai" class="btn btn-accent btn-block">
+                  <span class="btn-icon">⚡</span>
+                  <span class="btn-text">Generate Description & Attributes</span>
+                </button>
+                <div id="ai-generation-loading" class="generation-spinner-box hidden">
+                  <div class="spinner"></div>
+                  <span id="generation-status-text">Analyzing image with BLIP model...</span>
+                </div>
+                <div id="ai-generation-error" class="alert-banner alert-error hidden" role="alert"></div>
+              </div>
+            </div>
+
+            <!-- SECTION C: Manual Product Details (Price, Qty, SKU) -->
+            <div class="card form-card">
+              <h2 class="section-title">Inventory & Pricing</h2>
+              <p class="section-subtitle">Merchant-managed details for your Shopify store.</p>
+
+              <div class="form-row-2">
+                <div class="form-group">
+                  <label for="input-price">Price (₹ INR)</label>
+                  <div class="input-prefix-wrapper">
+                    <span class="input-prefix">₹</span>
+                    <input
+                      type="number"
+                      id="input-price"
+                      class="form-control with-prefix"
+                      placeholder="0.00"
+                      min="0"
+                      step="0.01"
+                    >
+                  </div>
+                </div>
+
+                <div class="form-group">
+                  <label for="input-quantity">Quantity / Stock</label>
+                  <input
+                    type="number"
+                    id="input-quantity"
+                    class="form-control"
+                    placeholder="0"
+                    min="0"
+                    step="1"
+                  >
+                </div>
+              </div>
+
+              <div class="form-group">
+                <label for="input-sku">SKU (Stock Keeping Unit)</label>
+                <input
+                  type="text"
+                  id="input-sku"
+                  class="form-control"
+                  placeholder="e.g. CLO-BLU-001"
+                >
+              </div>
+            </div>
+
+          </div>
+
+          <!-- RIGHT COLUMN: Exactly 4 Generated Editable Sections -->
+          <div class="editor-column-right">
+            
+            <!-- Warning Banner as required -->
+            <div class="warning-banner" role="note">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/>
+                <line x1="12" y1="9" x2="12" y2="13"/>
+                <line x1="12" y1="17" x2="12.01" y2="17"/>
+              </svg>
+              <span>AI-generated details may be inaccurate. Please verify all attributes before publishing.</span>
+            </div>
+
+            <!-- SECTION B.1: PRODUCT TITLE -->
+            <div class="card output-card">
+              <div class="output-card-header">
+                <h2 class="output-section-title">1. Product Title</h2>
+                <span class="field-indicator">Editable</span>
+              </div>
+              <div class="form-group">
+                <label for="output-title" class="sr-only">Product Title</label>
+                <input
+                  type="text"
+                  id="output-title"
+                  class="form-control form-control-lg"
+                  placeholder="Generated title will appear here..."
+                >
+              </div>
+            </div>
+
+            <!-- SECTION B.2: VISUAL ATTRIBUTES -->
+            <div class="card output-card">
+              <div class="output-card-header">
+                <h2 class="output-section-title">2. Visual Attributes</h2>
+                <span class="field-indicator">Editable</span>
+              </div>
+              <p class="section-subtitle">Conservative visual detections from image analysis and caption heuristics.</p>
+
+              <div class="attributes-grid">
+                <!-- Category -->
+                <div class="attribute-field">
+                  <div class="attribute-label-row">
+                    <label for="attr-category">Category</label>
+                    <span id="conf-category" class="conf-pill">Not detected</span>
+                  </div>
+                  <input type="text" id="attr-category" class="form-control" placeholder="e.g. Clothing">
+                </div>
+
+                <!-- Main Color -->
+                <div class="attribute-field">
+                  <div class="attribute-label-row">
+                    <label for="attr-color">Main Color</label>
+                    <span id="conf-color" class="conf-pill">Not detected</span>
+                  </div>
+                  <input type="text" id="attr-color" class="form-control" placeholder="e.g. Navy Blue">
+                </div>
+
+                <!-- Shape / Style -->
+                <div class="attribute-field">
+                  <div class="attribute-label-row">
+                    <label for="attr-shape">Shape / Style</label>
+                    <span id="conf-shape" class="conf-pill">Not detected</span>
+                  </div>
+                  <input type="text" id="attr-shape" class="form-control" placeholder="e.g. Collared button-up silhouette">
+                </div>
+
+                <!-- Pattern -->
+                <div class="attribute-field">
+                  <div class="attribute-label-row">
+                    <label for="attr-pattern">Pattern</label>
+                    <span id="conf-pattern" class="conf-pill">Not detected</span>
+                  </div>
+                  <input type="text" id="attr-pattern" class="form-control" placeholder="e.g. Solid / Plain">
+                </div>
+
+                <!-- Visible Texture -->
+                <div class="attribute-field attribute-field-full">
+                  <div class="attribute-label-row">
+                    <label for="attr-texture">Visible Texture</label>
+                    <span id="conf-texture" class="conf-pill">Not detected</span>
+                  </div>
+                  <input type="text" id="attr-texture" class="form-control" placeholder="e.g. Denim weave / Smooth matte finish">
+                </div>
+              </div>
+            </div>
+
+            <!-- SECTION B.3: FULL PRODUCT DESCRIPTION -->
+            <div class="card output-card">
+              <div class="output-card-header">
+                <h2 class="output-section-title">3. Full Product Description</h2>
+                <span class="field-indicator">Editable</span>
+              </div>
+              <p class="section-subtitle">Naturally formatted description suitable for your Shopify product page.</p>
+
+              <div class="form-group">
+                <label for="output-description" class="sr-only">Full Product Description</label>
+                <textarea
+                  id="output-description"
+                  class="form-control textarea-description"
+                  rows="8"
+                  placeholder="AI-generated description grounded in visible traits will appear here..."
+                ></textarea>
+              </div>
+            </div>
+
+            <!-- SECTION B.4: KEY FEATURES -->
+            <div class="card output-card">
+              <div class="output-card-header">
+                <h2 class="output-section-title">4. Key Features</h2>
+                <button type="button" id="btn-add-feature" class="btn btn-outline btn-xs">
+                  + Add Feature
+                </button>
+              </div>
+              <p class="section-subtitle">Structured bullet points highlighting observable visual features.</p>
+
+              <div id="features-container" class="features-list" role="list">
+                <!-- Bullet points populated dynamically -->
+              </div>
+            </div>
+
+            <!-- Raw Model Caption & Diagnostic Accordion -->
+            <details class="diagnostic-details">
+              <summary>BLIP Model Diagnostic Output</summary>
+              <div class="diagnostic-body">
+                <p><strong>Generated BLIP Caption:</strong> <span id="diag-caption">—</span></p>
+                <p><strong>Inference Device:</strong> <span id="diag-device">—</span></p>
+                <div id="diag-uncertainty-box"></div>
+              </div>
+            </details>
+
+          </div>
+        </div>
+      </div>
+    </section>
+
+  </div>
+
+  <script src="app.js"></script>
+</body>
+</html>
